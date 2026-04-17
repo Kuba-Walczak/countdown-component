@@ -5,12 +5,12 @@ import { useCountdown } from "../hooks/useCountdown"
 
 interface SegmentProps {
   digit: string
-  slideStrength: number
-  showFlash: boolean
+  slideIntensity: number
+  flashIntensity: number
   slideDuration: number
 }
 
-function Segment({ digit, slideStrength, showFlash, slideDuration }: SegmentProps) {
+function Segment({ digit, slideIntensity, flashIntensity, slideDuration }: SegmentProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const flashRef = useRef<HTMLDivElement>(null)
   const spanRef = useRef<HTMLSpanElement>(null)
@@ -28,26 +28,25 @@ function Segment({ digit, slideStrength, showFlash, slideDuration }: SegmentProp
     gsap.killTweensOf([flashLayer, span])
 
     gsap.to(span, {
-      y: `${Math.min(slideStrength, 125)}%`,
+      y: `${Math.min(slideIntensity, 125)}%`,
       duration: slideDuration,
       ease: "power4.in",
       onComplete: () => {
         setDisplayed(pendingDigit.current)
-        gsap.fromTo(span, { y: `-${Math.min(slideStrength, 125)}%` }, { y: "0%", duration: slideDuration, ease: "power4.out" })
-        if (showFlash) {
-          gsap.timeline().to(containerRef.current, { y: `${slideStrength * 0.075}%`, duration: slideDuration * 0.35, ease: "power1.out" }).to(containerRef.current, { y: "0%", duration: slideDuration, ease: "ease.in" })
-          gsap.fromTo(flashLayer, { opacity: 0.2 }, { opacity: 0, duration: 0.5 })
-        }
+        gsap.fromTo(span, { y: `-${Math.min(slideIntensity, 125)}%` }, { y: "0%", duration: slideDuration, ease: "power4.out" })
+        gsap.timeline().to(containerRef.current, { y: `${slideIntensity * 0.075}%`, duration: slideDuration * 0.35, ease: "power1.out" }).to(containerRef.current, { y: "0%", duration: slideDuration, ease: "ease.in" })
+        gsap.fromTo(flashLayer, { opacity: flashIntensity }, { opacity: 0, duration: 0.5 })
       },
     })
-  }, [digit, slideStrength, showFlash, slideDuration])
+  }, [digit, slideIntensity, flashIntensity, slideDuration])
 
   return (
-    <div ref={containerRef} className="relative overflow-hidden flex items-center justify-center rounded-lg bg-accent w-14 h-16">
-      <div ref={flashRef} className="absolute inset-0 bg-accent-foreground opacity-0 pointer-events-none" />
+    <div ref={containerRef} className="relative overflow-hidden flex items-center justify-center rounded-lg bg-card w-14 h-16">
+      <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_16px_rgba(0,0,0,0.5)]" />
+      <div ref={flashRef} className="absolute inset-0 bg-white opacity-0 pointer-events-none" />
       <span
         ref={spanRef}
-        className="absolute tabular-nums text-4xl font-bold tracking-tight text-accent-foreground"
+        className="absolute tabular-nums text-4xl font-bold tracking-tight text-accent"
       >
         {displayed}
       </span>
@@ -58,22 +57,22 @@ function Segment({ digit, slideStrength, showFlash, slideDuration }: SegmentProp
 interface SegmentGroupProps {
   value: number
   unit: string
-  slideStrength: number
-  showFlash: boolean
-  showText: boolean
+  slideIntensity: number
   slideDuration: number
+  flashIntensity: number
+  showText: boolean
 }
 
-function SegmentGroup({ value, unit, slideStrength, showFlash, showText, slideDuration }: SegmentGroupProps) {
+function SegmentGroup({ value, unit, slideIntensity, slideDuration, flashIntensity, showText }: SegmentGroupProps) {
   const [tens, ones] = String(value).padStart(2, "0").split("")
   return (
     <div className="flex flex-col items-center gap-2">
       <div className="flex gap-1">
-        <Segment digit={tens} slideStrength={slideStrength} showFlash={showFlash} slideDuration={slideDuration} />
-        <Segment digit={ones} slideStrength={slideStrength} showFlash={showFlash} slideDuration={slideDuration} />
+        <Segment digit={tens} slideIntensity={slideIntensity} flashIntensity={flashIntensity} slideDuration={slideDuration} />
+        <Segment digit={ones} slideIntensity={slideIntensity} flashIntensity={flashIntensity} slideDuration={slideDuration} />
       </div>
       {showText && (
-        <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+        <span className="text-xs font-semibold uppercase tracking-widest text-muted-background">
           {unit}
         </span>
       )}
@@ -87,7 +86,7 @@ function Separator() {
       <svg
         aria-hidden="true"
         viewBox="0 0 12 32"
-        className="h-10 w-4 fill-muted-foreground"
+        className="h-10 w-4 fill-muted-background"
       >
         <circle cx="6" cy="11" r="2.2" />
         <circle cx="6" cy="21" r="2.2" />
@@ -99,21 +98,21 @@ function Separator() {
 interface CountdownProps {
   targetDate: Date | string
   onFinish?: () => void
-  slideStrength?: number
+  slideIntensity?: number
   slideDuration?: number
   showText?: boolean
-  showFlash?: boolean
+  flashIntensity?: number
 }
 
 export default function Countdown({
   targetDate,
   onFinish,
-  slideStrength = 125,
+  slideIntensity = 125,
   slideDuration = 0.5,
   showText = true,
-  showFlash = true,
+  flashIntensity = 0.5,
 }: CountdownProps) {
-  const safeSlideStrength = Math.min(slideStrength, 500)
+  const safeSlideStrength = Math.min(slideIntensity, 500)
   const safeSlideDuration = Math.min(slideDuration, 0.5)
   const { days, hours, minutes, seconds, isFinished } = useCountdown(targetDate)
 
@@ -123,8 +122,8 @@ export default function Countdown({
 
   if (isFinished) {
     return (
-      <div className="flex items-center justify-center rounded-2xl bg-card p-4">
-        <span className="text-2xl font-semibold tracking-wide text-muted-foreground">
+      <div className="flex items-center justify-center rounded-2xl bg-accent p-4 shadow-xl shadow-black/30">
+        <span className="text-2xl font-semibold tracking-wide text-muted-background">
           Time's up
         </span>
       </div>
@@ -132,14 +131,14 @@ export default function Countdown({
   }
 
   return (
-    <div className="flex items-start gap-2 rounded-2xl bg-card p-4">
-      <SegmentGroup value={days} unit="dni" slideStrength={safeSlideStrength} showFlash={showFlash} showText={showText} slideDuration={safeSlideDuration} />
+    <div className="flex items-start gap-2 rounded-2xl bg-accent p-4 shadow-xl shadow-black/30">
+      <SegmentGroup value={days} unit="dni" slideIntensity={safeSlideStrength} flashIntensity={flashIntensity} showText={showText} slideDuration={safeSlideDuration} />
       <Separator />
-      <SegmentGroup value={hours} unit="godziny" slideStrength={safeSlideStrength} showFlash={showFlash} showText={showText} slideDuration={safeSlideDuration} />
+      <SegmentGroup value={hours} unit="godziny" slideIntensity={safeSlideStrength} flashIntensity={flashIntensity} showText={showText} slideDuration={safeSlideDuration} />
       <Separator />
-      <SegmentGroup value={minutes} unit="minuty" slideStrength={safeSlideStrength} showFlash={showFlash} showText={showText} slideDuration={safeSlideDuration} />
+      <SegmentGroup value={minutes} unit="minuty" slideIntensity={safeSlideStrength} flashIntensity={flashIntensity} showText={showText} slideDuration={safeSlideDuration} />
       <Separator />
-      <SegmentGroup value={seconds} unit="sekundy" slideStrength={safeSlideStrength} showFlash={showFlash} showText={showText} slideDuration={safeSlideDuration} />
+      <SegmentGroup value={seconds} unit="sekundy" slideIntensity={safeSlideStrength} flashIntensity={flashIntensity} showText={showText} slideDuration={safeSlideDuration} />
     </div>
   )
 }
