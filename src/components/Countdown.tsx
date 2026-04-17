@@ -82,11 +82,11 @@ function SegmentGroup({ value, unit, slideIntensity, slideDuration, flashIntensi
 
 function Separator() {
   return (
-    <div className="flex h-16 items-center justify-center">
+    <div className="h-16 items-center justify-center hidden sm:flex">
       <svg
         aria-hidden="true"
         viewBox="0 0 12 32"
-        className="h-10 w-4 fill-muted-background"
+        className="h-10 w-4 fill-card"
       >
         <circle cx="6" cy="11" r="2.2" />
         <circle cx="6" cy="21" r="2.2" />
@@ -113,19 +113,26 @@ export default function Countdown({
   showText = true,
 }: CountdownProps) {
   const normalizedSlideDuration = Math.max(0, Math.min(slideDuration, 1))
-
-  const safeSlideStrength = slideIntensity * 125
-  const safeSlideDuration = normalizedSlideDuration * 0.5
-  const safeFlashIntensity = flashIntensity * 0.25
+  const flashRef = useRef<HTMLDivElement>(null)
+  const denormalizedSlideIntensity = slideIntensity * 125
+  const denormalizedSlideDuration = normalizedSlideDuration * 0.5
+  const denormalizedFlashIntensity = flashIntensity * 0.25
   const { days, hours, minutes, seconds, isFinished } = useCountdown(targetDate)
 
   useEffect(() => {
     if (isFinished) onFinish?.()
   }, [isFinished])
 
+  useEffect(() => {
+    console.log(days, hours, minutes, seconds)
+    if (days === 0 && hours === 0 && minutes === 0 && seconds <= 10) {
+      gsap.fromTo(flashRef.current, { opacity: 0.5 }, { opacity: 0, duration: 0.5 })
+    }
+  }, [seconds])
+
   if (isFinished) {
     return (
-      <div className="flex items-center justify-center rounded-2xl bg-accent p-4 shadow-xl shadow-black/30">
+      <div className="flex items-center justify-center rounded-2xl bg-accent p-4">
         <span className="text-2xl font-semibold tracking-wide text-muted-background">
           Time's up
         </span>
@@ -134,14 +141,15 @@ export default function Countdown({
   }
 
   return (
-    <div className="flex items-start gap-2 rounded-2xl bg-accent p-4 shadow-xl shadow-black/30">
-      <SegmentGroup value={days} unit="dni" slideIntensity={safeSlideStrength} flashIntensity={safeFlashIntensity} showText={showText} slideDuration={safeSlideDuration} />
+    <div className="relative flex flex-col sm:flex-row items-start gap-2 rounded-2xl bg-accent p-4">
+      <div ref={flashRef} className="absolute inset-0 bg-white opacity-0 rounded-2xl pointer-events-none z-10" />
+      <SegmentGroup value={days} unit="dni" slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showText={showText} slideDuration={denormalizedSlideDuration} />
       <Separator />
-      <SegmentGroup value={hours} unit="godziny" slideIntensity={safeSlideStrength} flashIntensity={safeFlashIntensity} showText={showText} slideDuration={safeSlideDuration} />
+      <SegmentGroup value={hours} unit="godziny" slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showText={showText} slideDuration={denormalizedSlideDuration} />
       <Separator />
-      <SegmentGroup value={minutes} unit="minuty" slideIntensity={safeSlideStrength} flashIntensity={safeFlashIntensity} showText={showText} slideDuration={safeSlideDuration} />
+      <SegmentGroup value={minutes} unit="minuty" slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showText={showText} slideDuration={denormalizedSlideDuration} />
       <Separator />
-      <SegmentGroup value={seconds} unit="sekundy" slideIntensity={safeSlideStrength} flashIntensity={safeFlashIntensity} showText={showText} slideDuration={safeSlideDuration} />
+      <SegmentGroup value={seconds} unit="sekundy" slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showText={showText} slideDuration={denormalizedSlideDuration} />
     </div>
   )
 }
