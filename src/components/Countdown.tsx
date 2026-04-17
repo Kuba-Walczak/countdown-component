@@ -100,20 +100,23 @@ interface CountdownProps {
   onFinish?: () => void
   slideIntensity?: number
   slideDuration?: number
-  showText?: boolean
   flashIntensity?: number
+  showText?: boolean
 }
 
 export default function Countdown({
   targetDate,
   onFinish,
-  slideIntensity = 125,
-  slideDuration = 0.5,
+  slideIntensity = 1,
+  slideDuration = 1,
+  flashIntensity = 1,
   showText = true,
-  flashIntensity = 0.5,
 }: CountdownProps) {
-  const safeSlideStrength = Math.min(slideIntensity, 500)
-  const safeSlideDuration = Math.min(slideDuration, 0.5)
+  const normalizedSlideDuration = Math.max(0, Math.min(slideDuration, 1))
+
+  const safeSlideStrength = slideIntensity * 125
+  const safeSlideDuration = normalizedSlideDuration * 0.5
+  const safeFlashIntensity = flashIntensity * 0.25
   const { days, hours, minutes, seconds, isFinished } = useCountdown(targetDate)
 
   useEffect(() => {
@@ -132,13 +135,13 @@ export default function Countdown({
 
   return (
     <div className="flex items-start gap-2 rounded-2xl bg-accent p-4 shadow-xl shadow-black/30">
-      <SegmentGroup value={days} unit="dni" slideIntensity={safeSlideStrength} flashIntensity={flashIntensity} showText={showText} slideDuration={safeSlideDuration} />
+      <SegmentGroup value={days} unit="dni" slideIntensity={safeSlideStrength} flashIntensity={safeFlashIntensity} showText={showText} slideDuration={safeSlideDuration} />
       <Separator />
-      <SegmentGroup value={hours} unit="godziny" slideIntensity={safeSlideStrength} flashIntensity={flashIntensity} showText={showText} slideDuration={safeSlideDuration} />
+      <SegmentGroup value={hours} unit="godziny" slideIntensity={safeSlideStrength} flashIntensity={safeFlashIntensity} showText={showText} slideDuration={safeSlideDuration} />
       <Separator />
-      <SegmentGroup value={minutes} unit="minuty" slideIntensity={safeSlideStrength} flashIntensity={flashIntensity} showText={showText} slideDuration={safeSlideDuration} />
+      <SegmentGroup value={minutes} unit="minuty" slideIntensity={safeSlideStrength} flashIntensity={safeFlashIntensity} showText={showText} slideDuration={safeSlideDuration} />
       <Separator />
-      <SegmentGroup value={seconds} unit="sekundy" slideIntensity={safeSlideStrength} flashIntensity={flashIntensity} showText={showText} slideDuration={safeSlideDuration} />
+      <SegmentGroup value={seconds} unit="sekundy" slideIntensity={safeSlideStrength} flashIntensity={safeFlashIntensity} showText={showText} slideDuration={safeSlideDuration} />
     </div>
   )
 }
