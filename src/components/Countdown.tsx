@@ -34,7 +34,7 @@ function Segment({ digit, slideIntensity, flashIntensity, slideDuration }: Segme
       onComplete: () => {
         setDisplayed(pendingDigit.current)
         gsap.fromTo(span, { y: `-${Math.min(slideIntensity, 125)}%` }, { y: "0%", duration: slideDuration, ease: "power4.out" })
-        gsap.timeline().to(containerRef.current, { y: `${slideIntensity * 0.075}%`, duration: slideDuration * 0.35, ease: "power1.out" }).to(containerRef.current, { y: "0%", duration: slideDuration, ease: "power1.in" })
+        gsap.timeline().to(containerRef.current, { y: `${slideIntensity * 0.075}%`, duration: slideDuration * 0.35, ease: "power1.out" }).to(containerRef.current, { y: "0%", duration: slideDuration, ease: "ease.in" })
         gsap.fromTo(flashLayer, { opacity: flashIntensity }, { opacity: 0, duration: 0.5 })
       },
     })
@@ -77,7 +77,7 @@ function SegmentGroup({ value, unit, slideIntensity, slideDuration, flashIntensi
   }, [isFinalCountdown])
 
   return (
-    <div ref={outerRef} className="flex flex-col items-center gap-2 basis-[calc(50%-0.25rem)] sm:basis-auto">
+    <div ref={outerRef} className="flex flex-col items-center gap-2">
       <div className="flex gap-1">
         <Segment digit={tensDisplayDigit ?? tens} slideIntensity={slideIntensity} flashIntensity={flashIntensity} slideDuration={slideDuration} />
         <Segment digit={onesDisplayDigit ?? ones} slideIntensity={slideIntensity} flashIntensity={flashIntensity} slideDuration={slideDuration} />
@@ -95,9 +95,10 @@ function SegmentGroup({ value, unit, slideIntensity, slideDuration, flashIntensi
 
 interface SeparatorProps {
   isFinalCountdown: boolean
+  showBelowSm?: boolean
 }
 
-function Separator({ isFinalCountdown }: SeparatorProps) {
+function Separator({ isFinalCountdown, showBelowSm = false }: SeparatorProps) {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -112,7 +113,7 @@ function Separator({ isFinalCountdown }: SeparatorProps) {
   }, [isFinalCountdown])
 
   return (
-    <div ref={ref} className="h-16 items-center justify-center hidden sm:flex overflow-hidden">
+    <div ref={ref} className={`h-16 items-center justify-center overflow-hidden ${showBelowSm ? "flex" : "hidden sm:flex"}`}>
       <svg
         aria-hidden="true"
         viewBox="0 0 12 32"
@@ -170,13 +171,13 @@ export default function Countdown({
   }
 
   return (
-    <div className={`relative flex flex-wrap sm:flex-nowrap items-start rounded-2xl bg-accent p-4 ${isFinalCountdown ? "gap-0.5" : "gap-2"} transition-all duration-500`}>
+    <div className={`w-fit grid grid-cols-[auto_auto_auto] sm:flex sm:flex-nowrap items-start rounded-2xl bg-accent p-4 ${isFinalCountdown ? "sm:gap-0.5 gap-x-0.5 gap-y-1" : "gap-2"} transition-all duration-500`}>
       <SegmentGroup value={days} unit="dni" slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showLabels={showLabels} slideDuration={denormalizedSlideDuration} isFinalCountdown={isFinalCountdown} secondsValue={seconds} />
-          <Separator isFinalCountdown={isFinalCountdown} />
+          <Separator isFinalCountdown={isFinalCountdown} showBelowSm />
           <SegmentGroup value={hours} unit="godziny" slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showLabels={showLabels} slideDuration={denormalizedSlideDuration} isFinalCountdown={isFinalCountdown} secondsValue={seconds} />
           <Separator isFinalCountdown={isFinalCountdown} />
           <SegmentGroup value={minutes} unit="minuty" slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showLabels={showLabels} slideDuration={denormalizedSlideDuration} isFinalCountdown={isFinalCountdown} secondsValue={seconds} />
-          <Separator isFinalCountdown={isFinalCountdown} />
+          <Separator isFinalCountdown={isFinalCountdown} showBelowSm />
           <SegmentGroup value={seconds} unit="sekundy" slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showLabels={showLabels} slideDuration={denormalizedSlideDuration} isFinalCountdown={isFinalCountdown} secondsValue={seconds} />
     </div>
   )
