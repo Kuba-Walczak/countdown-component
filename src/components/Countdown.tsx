@@ -83,9 +83,7 @@ function SegmentGroup({ value, unit, slideIntensity, slideDuration, flashIntensi
     }
 
     if (isFinalCountdown && labelWrapperRef.current && outerRef.current) {
-      if (!isSeconds) {
-        gsap.to(labelWrapperRef.current, { opacity: 0, height: 0, duration: 0.5, ease: "power4.out" })
-      }
+      gsap.to(labelWrapperRef.current, { opacity: 0, height: 0, duration: 0.5, ease: "power4.out" })
       gsap.to(outerRef.current, { rowGap: 0, duration: 0.5, ease: "power4.out" })
     }
   }, [isFinalCountdown, isSeconds])
