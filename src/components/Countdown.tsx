@@ -56,11 +56,14 @@ function Segment({ digit, slideIntensity, flashIntensity, slideDuration }: Segme
   }, [digit, slideIntensity, flashIntensity, slideDuration])
 
   return (
-    <div ref={containerRef} className="relative overflow-hidden flex items-center justify-center w-14 bg-card h-16 rounded-lg shadow-[inset_0_0_16px_rgba(0,0,0,0.5)]">
-      <div ref={flashRef} className="absolute inset-0 bg-white opacity-0 pointer-events-none" />
+    <div
+      ref={containerRef}
+      className="relative overflow-hidden flex items-center justify-center w-14 bg-muted h-16 rounded-lg shadow-[inset_0_0_16px_rgba(0,0,0,0.5)]"
+    >
+      <div ref={flashRef} className="absolute inset-0 bg-foreground opacity-0 pointer-events-none" />
       <span
         ref={spanRef}
-        className="absolute tabular-nums text-4xl font-bold tracking-tight text-accent"
+        className="absolute tabular-nums text-4xl font-bold tracking-tight text-foreground"
       >
         {displayed}
       </span>
@@ -79,7 +82,18 @@ interface SegmentGroupProps {
   animateSizeOnMobile?: boolean
 }
 
-function SegmentGroup({ value, unit, slideIntensity, slideDuration, flashIntensity, showLabels, isFinalCountdown, isSeconds, isMobile, animateSizeOnMobile }: SegmentGroupProps & { isFinalCountdown?: boolean, isSeconds?: boolean }) {
+function SegmentGroup({
+  value,
+  unit,
+  slideIntensity,
+  slideDuration,
+  flashIntensity,
+  showLabels,
+  isFinalCountdown,
+  isSeconds,
+  isMobile,
+  animateSizeOnMobile,
+}: SegmentGroupProps & { isFinalCountdown?: boolean, isSeconds?: boolean }) {
   const [tens, ones] = String(value).padStart(2, "0").split("")
   const labelWrapperRef = useRef<HTMLDivElement>(null)
   const outerRef = useRef<HTMLDivElement>(null)
@@ -125,12 +139,22 @@ function SegmentGroup({ value, unit, slideIntensity, slideDuration, flashIntensi
   return (
     <div ref={outerRef} className={`flex flex-col items-center gap-2 ${!isSeconds ? "overflow-hidden" : ""}`}>
       <div className="flex gap-1">
-        <Segment digit={tens} slideIntensity={slideIntensity} flashIntensity={flashIntensity} slideDuration={slideDuration} />
-        <Segment digit={ones} slideIntensity={slideIntensity} flashIntensity={flashIntensity} slideDuration={slideDuration} />
+        <Segment
+          digit={tens}
+          slideIntensity={slideIntensity}
+          flashIntensity={flashIntensity}
+          slideDuration={slideDuration}
+        />
+        <Segment
+          digit={ones}
+          slideIntensity={slideIntensity}
+          flashIntensity={flashIntensity}
+          slideDuration={slideDuration}
+        />
       </div>
       {showLabels && (
         <div ref={labelWrapperRef} className="overflow-hidden">
-          <span className="text-xs font-semibold uppercase tracking-widest text-muted-background">
+          <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             {unit}
           </span>
         </div>
@@ -174,7 +198,7 @@ function Separator({ isFinalCountdown, showBelowSm = false, isMobile }: Separato
       <svg
         aria-hidden="true"
         viewBox="0 0 12 32"
-        className="h-10 w-4 fill-card"
+        className="h-10 w-4 fill-muted-foreground"
       >
         <circle cx="6" cy="11" r="2.2" />
         <circle cx="6" cy="21" r="2.2" />
@@ -293,8 +317,8 @@ export default function Countdown({
   if (expiredAtMount.current) {
     return (
       <div className="relative flex flex-wrap sm:flex-nowrap items-start rounded-2xl bg-accent p-4 gap-2">
-      <div className="relative flex items-center justify-center rounded-lg px-4 h-16 bg-card shadow-[inset_0_0_16px_rgba(0,0,0,0.5)]">
-        <span className="text-4xl font-bold text-accent whitespace-nowrap">
+      <div className="relative flex items-center justify-center rounded-lg px-4 h-16 bg-muted shadow-[inset_0_0_16px_color-mix(in_oklab,var(--foreground)_22%,transparent)]">
+        <span className="text-4xl font-bold text-foreground whitespace-nowrap">
           {endText}
         </span>
       </div>
@@ -303,7 +327,10 @@ export default function Countdown({
   }
 
   return (
-    <div ref={containerRef} className={`w-fit grid grid-cols-[auto_auto_auto] sm:flex sm:flex-nowrap items-start rounded-2xl bg-accent p-4 ${isFinalCountdown ? "gap-0" : "gap-2"} transition-all duration-500`}>
+    <div
+      ref={containerRef}
+      className={`w-fit grid grid-cols-[auto_auto_auto] sm:flex sm:flex-nowrap items-start rounded-2xl bg-accent p-4 transition-all duration-500 ${isFinalCountdown ? "gap-0" : "gap-2"}`}
+    >
       <SegmentGroup value={days} unit={labels.days} slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showLabels={showLabels} slideDuration={denormalizedSlideDuration} isFinalCountdown={isFinalCountdown} isMobile={isMobile} animateSizeOnMobile />
       <Separator isFinalCountdown={isFinalCountdown} showBelowSm isMobile={isMobile} />
       <SegmentGroup value={hours} unit={labels.hours} slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showLabels={showLabels} slideDuration={denormalizedSlideDuration} isFinalCountdown={isFinalCountdown} isMobile={isMobile} animateSizeOnMobile />
