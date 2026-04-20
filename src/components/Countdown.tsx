@@ -60,15 +60,21 @@ interface SegmentGroupProps {
   slideDuration: number
   flashIntensity: number
   showLabels: boolean
+  isMobile?: boolean
+  animateSizeOnMobile?: boolean
 }
 
-function SegmentGroup({ value, unit, slideIntensity, slideDuration, flashIntensity, showLabels, isFinalCountdown, isSeconds }: SegmentGroupProps & { isFinalCountdown?: boolean, isSeconds?: boolean }) {
+function SegmentGroup({ value, unit, slideIntensity, slideDuration, flashIntensity, showLabels, isFinalCountdown, isSeconds, isMobile, animateSizeOnMobile }: SegmentGroupProps & { isFinalCountdown?: boolean, isSeconds?: boolean }) {
   const [tens, ones] = String(value).padStart(2, "0").split("")
   const labelWrapperRef = useRef<HTMLDivElement>(null)
   const outerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (isFinalCountdown && !isSeconds && outerRef.current) {
+      if (isMobile && !animateSizeOnMobile) {
+        gsap.set(outerRef.current, { opacity: 0, width: 0, margin: 0, padding: 0 })
+        outerRef.current.style.display = "none"
+      } else {
       gsap.to(outerRef.current, {
         width: 0,
         opacity: 0,
@@ -80,13 +86,19 @@ function SegmentGroup({ value, unit, slideIntensity, slideDuration, flashIntensi
           if (outerRef.current) outerRef.current.style.display = "none"
         }
       })
+      }
     }
 
     if (isFinalCountdown && labelWrapperRef.current && outerRef.current) {
-      gsap.to(labelWrapperRef.current, { opacity: 0, height: 0, duration: 0.5, ease: "power4.out" })
-      gsap.to(outerRef.current, { rowGap: 0, duration: 0.5, ease: "power4.out" })
+      if (isMobile) {
+        gsap.set(labelWrapperRef.current, { opacity: 0, height: 0 })
+        gsap.set(outerRef.current, { rowGap: 0 })
+      } else {
+        gsap.to(labelWrapperRef.current, { opacity: 0, height: 0, duration: 0.5, ease: "power4.out" })
+        gsap.to(outerRef.current, { rowGap: 0, duration: 0.5, ease: "power4.out" })
+      }
     }
-  }, [isFinalCountdown, isSeconds])
+  }, [isFinalCountdown, isSeconds, isMobile, animateSizeOnMobile])
 
   return (
     <div ref={outerRef} className={`flex flex-col items-center gap-2 ${!isSeconds ? "overflow-hidden" : ""}`}>
@@ -108,21 +120,27 @@ function SegmentGroup({ value, unit, slideIntensity, slideDuration, flashIntensi
 interface SeparatorProps {
   isFinalCountdown: boolean
   showBelowSm?: boolean
+  isMobile?: boolean
 }
 
-function Separator({ isFinalCountdown, showBelowSm = false }: SeparatorProps) {
+function Separator({ isFinalCountdown, showBelowSm = false, isMobile }: SeparatorProps) {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (isFinalCountdown && ref.current) {
-      gsap.to(ref.current, {
-        opacity: 0,
-        width: 0,
-        duration: 0.5,
-        ease: "power4.out",
-      })
+      if (isMobile) {
+        gsap.set(ref.current, { opacity: 0, width: 0 })
+        ref.current.style.display = "none"
+      } else {
+        gsap.to(ref.current, {
+          opacity: 0,
+          width: 0,
+          duration: 0.5,
+          ease: "power4.out",
+        })
+      }
     }
-  }, [isFinalCountdown])
+  }, [isFinalCountdown, isMobile])
 
   return (
     <div ref={ref} className={`h-16 items-center justify-center overflow-hidden ${showBelowSm ? "flex" : "hidden sm:flex"}`}>
@@ -167,6 +185,18 @@ export default function Countdown({
   const isFinalCountdown = days === 0 && hours === 0 && minutes === 0 && seconds <= 9
 
   const containerRef = useRef<HTMLDivElement>(null)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+
+    const mediaQuery = window.matchMedia("(max-width: 640px)")
+    const handleChange = () => setIsMobile(mediaQuery.matches)
+    handleChange()
+    mediaQuery.addEventListener("change", handleChange)
+
+    return () => mediaQuery.removeEventListener("change", handleChange)
+  }, [])
 
   useEffect(() => {
     if (isFinalCountdown && containerRef.current) {
@@ -203,13 +233,13 @@ export default function Countdown({
 
   return (
     <div ref={containerRef} className={`w-fit grid grid-cols-[auto_auto_auto] sm:flex sm:flex-nowrap items-start rounded-2xl bg-accent p-4 ${isFinalCountdown ? "gap-0" : "gap-2"} transition-all duration-500`}>
-      <SegmentGroup value={days} unit="dni" slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showLabels={showLabels} slideDuration={denormalizedSlideDuration} isFinalCountdown={isFinalCountdown} />
-      <Separator isFinalCountdown={isFinalCountdown} showBelowSm />
-      <SegmentGroup value={hours} unit="godziny" slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showLabels={showLabels} slideDuration={denormalizedSlideDuration} isFinalCountdown={isFinalCountdown} />
-      <Separator isFinalCountdown={isFinalCountdown} />
-      <SegmentGroup value={minutes} unit="minuty" slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showLabels={showLabels} slideDuration={denormalizedSlideDuration} isFinalCountdown={isFinalCountdown} />
-      <Separator isFinalCountdown={isFinalCountdown} showBelowSm />
-      <SegmentGroup value={seconds} unit="sekundy" slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showLabels={showLabels} slideDuration={denormalizedSlideDuration} isFinalCountdown={isFinalCountdown} isSeconds />
+      <SegmentGroup value={days} unit="dni" slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showLabels={showLabels} slideDuration={denormalizedSlideDuration} isFinalCountdown={isFinalCountdown} isMobile={isMobile} animateSizeOnMobile />
+      <Separator isFinalCountdown={isFinalCountdown} showBelowSm isMobile={isMobile} />
+      <SegmentGroup value={hours} unit="godziny" slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showLabels={showLabels} slideDuration={denormalizedSlideDuration} isFinalCountdown={isFinalCountdown} isMobile={isMobile} animateSizeOnMobile />
+      <Separator isFinalCountdown={isFinalCountdown} isMobile={isMobile} />
+      <SegmentGroup value={minutes} unit="minuty" slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showLabels={showLabels} slideDuration={denormalizedSlideDuration} isFinalCountdown={isFinalCountdown} isMobile={isMobile} />
+      <Separator isFinalCountdown={isFinalCountdown} showBelowSm isMobile={isMobile} />
+      <SegmentGroup value={seconds} unit="sekundy" slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showLabels={showLabels} slideDuration={denormalizedSlideDuration} isFinalCountdown={isFinalCountdown} isSeconds isMobile={isMobile} />
     </div>
   )
 }
