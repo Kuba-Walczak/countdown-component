@@ -171,6 +171,7 @@ interface CountdownProps {
   flashIntensity?: number
   showLabels?: boolean
   endText?: string
+  unitLabels?: Partial<Record<"days" | "hours" | "minutes" | "seconds", string>>
 }
 
 function useCountdown(targetDate: Date | string): TimeLeft {
@@ -210,7 +211,15 @@ export default function Countdown({
   flashIntensity = 1,
   showLabels = true,
   endText = "KONIEC CZASU",
+  unitLabels,
 }: CountdownProps) {
+  const labels = {
+    days: "dni",
+    hours: "godziny",
+    minutes: "minuty",
+    seconds: "sekundy",
+    ...unitLabels,
+  }
   const normalizedSlideDuration = Math.max(0, Math.min(slideDuration, 1))
   const denormalizedSlideIntensity = slideIntensity * 125
   const denormalizedSlideDuration = normalizedSlideDuration * 0.5
@@ -269,13 +278,13 @@ export default function Countdown({
 
   return (
     <div ref={containerRef} className={`w-fit grid grid-cols-[auto_auto_auto] sm:flex sm:flex-nowrap items-start rounded-2xl bg-accent p-4 ${isFinalCountdown ? "gap-0" : "gap-2"} transition-all duration-500`}>
-      <SegmentGroup value={days} unit="dni" slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showLabels={showLabels} slideDuration={denormalizedSlideDuration} isFinalCountdown={isFinalCountdown} isMobile={isMobile} animateSizeOnMobile />
+      <SegmentGroup value={days} unit={labels.days} slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showLabels={showLabels} slideDuration={denormalizedSlideDuration} isFinalCountdown={isFinalCountdown} isMobile={isMobile} animateSizeOnMobile />
       <Separator isFinalCountdown={isFinalCountdown} showBelowSm isMobile={isMobile} />
-      <SegmentGroup value={hours} unit="godziny" slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showLabels={showLabels} slideDuration={denormalizedSlideDuration} isFinalCountdown={isFinalCountdown} isMobile={isMobile} animateSizeOnMobile />
+      <SegmentGroup value={hours} unit={labels.hours} slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showLabels={showLabels} slideDuration={denormalizedSlideDuration} isFinalCountdown={isFinalCountdown} isMobile={isMobile} animateSizeOnMobile />
       <Separator isFinalCountdown={isFinalCountdown} isMobile={isMobile} />
-      <SegmentGroup value={minutes} unit="minuty" slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showLabels={showLabels} slideDuration={denormalizedSlideDuration} isFinalCountdown={isFinalCountdown} isMobile={isMobile} />
+      <SegmentGroup value={minutes} unit={labels.minutes} slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showLabels={showLabels} slideDuration={denormalizedSlideDuration} isFinalCountdown={isFinalCountdown} isMobile={isMobile} />
       <Separator isFinalCountdown={isFinalCountdown} showBelowSm isMobile={isMobile} />
-      <SegmentGroup value={seconds} unit="sekundy" slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showLabels={showLabels} slideDuration={denormalizedSlideDuration} isFinalCountdown={isFinalCountdown} isSeconds isMobile={isMobile} />
+      <SegmentGroup value={seconds} unit={labels.seconds} slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showLabels={showLabels} slideDuration={denormalizedSlideDuration} isFinalCountdown={isFinalCountdown} isSeconds isMobile={isMobile} />
     </div>
   )
 }
