@@ -30,8 +30,10 @@ function Segment({ digit, slideIntensity, flashIntensity, slideDuration }: Segme
 
     const flashLayer = flashRef.current
     const span = spanRef.current
+    const container = containerRef.current
     if (!flashLayer || !span) return
 
+    let isActive = true
     gsap.killTweensOf([flashLayer, span])
 
     gsap.to(span, {
@@ -39,12 +41,18 @@ function Segment({ digit, slideIntensity, flashIntensity, slideDuration }: Segme
       duration: slideDuration,
       ease: "power4.in",
       onComplete: () => {
+        if (!isActive) return
         setDisplayed(pendingDigit.current)
         gsap.fromTo(span, { y: `-${Math.min(slideIntensity, 125)}%` }, { y: "0%", duration: slideDuration, ease: "power4.out" })
-        gsap.timeline().to(containerRef.current, { y: `${slideIntensity * 0.075}%`, duration: slideDuration * 0.35, ease: "power1.out" }).to(containerRef.current, { y: "0%", duration: slideDuration, ease: "ease.in" })
+        gsap.timeline().to(container, { y: `${slideIntensity * 0.075}%`, duration: slideDuration * 0.35, ease: "power1.out" }).to(container, { y: "0%", duration: slideDuration, ease: "ease.in" })
         gsap.fromTo(flashLayer, { opacity: flashIntensity }, { opacity: 0, duration: 0.5 })
       },
     })
+
+    return () => {
+      isActive = false
+      gsap.killTweensOf([flashLayer, span, container])
+    }
   }, [digit, slideIntensity, flashIntensity, slideDuration])
 
   return (
@@ -77,6 +85,9 @@ function SegmentGroup({ value, unit, slideIntensity, slideDuration, flashIntensi
   const outerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    const outer = outerRef.current
+    const labelWrapper = labelWrapperRef.current
+
     if (isFinalCountdown && !isSeconds && outerRef.current) {
       if (isMobile && !animateSizeOnMobile) {
         gsap.set(outerRef.current, { opacity: 0, width: 0, margin: 0, padding: 0 })
@@ -104,6 +115,10 @@ function SegmentGroup({ value, unit, slideIntensity, slideDuration, flashIntensi
         gsap.to(labelWrapperRef.current, { opacity: 0, height: 0, duration: 0.5, ease: "power4.out" })
         gsap.to(outerRef.current, { rowGap: 0, duration: 0.5, ease: "power4.out" })
       }
+    }
+
+    return () => {
+      gsap.killTweensOf([outer, labelWrapper])
     }
   }, [isFinalCountdown, isSeconds, isMobile, animateSizeOnMobile])
 
@@ -134,6 +149,7 @@ function Separator({ isFinalCountdown, showBelowSm = false, isMobile }: Separato
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    const separator = ref.current
     if (isFinalCountdown && ref.current) {
       if (isMobile) {
         gsap.set(ref.current, { opacity: 0, width: 0 })
@@ -146,6 +162,10 @@ function Separator({ isFinalCountdown, showBelowSm = false, isMobile }: Separato
           ease: "power4.out",
         })
       }
+    }
+
+    return () => {
+      gsap.killTweensOf(separator)
     }
   }, [isFinalCountdown, isMobile])
 
@@ -244,6 +264,7 @@ export default function Countdown({
   }, [])
 
   useEffect(() => {
+    const container = containerRef.current
     if (isFinalCountdown && containerRef.current) {
       gsap.to(containerRef.current, {
         scale: 2,
@@ -257,6 +278,10 @@ export default function Countdown({
         duration: 0.5,
         ease: "power4.out",
       })
+    }
+
+    return () => {
+      gsap.killTweensOf(container)
     }
   }, [isFinalCountdown])
 
