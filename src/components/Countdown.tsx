@@ -44,7 +44,7 @@ function Segment({ digit, slideIntensity, flashIntensity, slideDuration }: Segme
         if (!isActive) return
         setDisplayed(pendingDigit.current)
         gsap.fromTo(span, { y: `-${Math.min(slideIntensity, 125)}%` }, { y: "0%", duration: slideDuration, ease: "power4.out" })
-        gsap.timeline().to(container, { y: `${slideIntensity * 0.075}%`, duration: slideDuration * 0.35, ease: "power1.out" }).to(container, { y: "0%", duration: slideDuration, ease: "ease.in" })
+        gsap.timeline().to(container, { y: `${slideIntensity * 0.075}%`, duration: slideDuration * 0.35, ease: "power1.out" }).to(container, { y: "0%", duration: slideDuration * 0.65, ease: "ease.in" })
         gsap.fromTo(flashLayer, { opacity: flashIntensity }, { opacity: 0, duration: 0.5 })
       },
     })
@@ -241,7 +241,8 @@ export default function Countdown({
     ...unitLabels,
   }
   const normalizedSlideDuration = Math.max(0, Math.min(slideDuration, 1))
-  const denormalizedSlideIntensity = slideIntensity * 125
+  const normalizedSlideIntensity = Math.max(0, Math.min(slideIntensity, 2))
+  const denormalizedSlideIntensity = normalizedSlideIntensity * 125
   const denormalizedSlideDuration = normalizedSlideDuration * 0.5
   const denormalizedFlashIntensity = flashIntensity * 0.25
   const { days, hours, minutes, seconds, isFinished } = useCountdown(targetDate)
