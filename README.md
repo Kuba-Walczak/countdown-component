@@ -1,6 +1,6 @@
 # Countdown Component
 
-`Countdown` props (`default` explicitly noted):
+`Countdown` props:
 
 - `targetDate` (`Date | string`, required, no default) - UTC time for countdown.
 - `slideIntensity` (`number`, optional, `default: 1`) - animation intensity, range `0-2`.
