@@ -287,7 +287,7 @@ export default function Countdown({
   }, [isFinalCountdown])
 
   useEffect(() => {
-    if (isFinished) onFinish?.()
+    if (isFinished && !expiredAtMount.current) onFinish?.()
   }, [isFinished])
 
   if (expiredAtMount.current) {
