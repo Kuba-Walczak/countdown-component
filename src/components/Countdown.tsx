@@ -15,9 +15,18 @@ interface SegmentProps {
   slideIntensity: number
   flashIntensity: number
   slideDuration: number
+  segmentClassName: string
+  digitClassName: string
 }
 
-function Segment({ digit, slideIntensity, flashIntensity, slideDuration }: SegmentProps) {
+function Segment({
+  digit,
+  slideIntensity,
+  flashIntensity,
+  slideDuration,
+  segmentClassName,
+  digitClassName,
+}: SegmentProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const flashRef = useRef<HTMLDivElement>(null)
   const spanRef = useRef<HTMLSpanElement>(null)
@@ -58,12 +67,12 @@ function Segment({ digit, slideIntensity, flashIntensity, slideDuration }: Segme
   return (
     <div
       ref={containerRef}
-      className="relative overflow-hidden flex items-center justify-center w-14 bg-muted h-16 rounded-lg shadow-[inset_0_0_16px_rgba(0,0,0,0.5)]"
+      className={`relative overflow-hidden flex items-center justify-center bg-muted rounded-lg shadow-[inset_0_0_16px_color-mix(in_oklab,var(--background)_100%,transparent)] ${segmentClassName}`}
     >
       <div ref={flashRef} className="absolute inset-0 bg-foreground opacity-0 pointer-events-none" />
       <span
         ref={spanRef}
-        className="absolute tabular-nums text-4xl font-bold tracking-tight text-foreground"
+        className={`absolute tabular-nums font-bold tracking-tight text-foreground ${digitClassName}`}
       >
         {displayed}
       </span>
@@ -80,6 +89,9 @@ interface SegmentGroupProps {
   showLabels: boolean
   isMobile?: boolean
   animateSizeOnMobile?: boolean
+  segmentClassName: string
+  digitClassName: string
+  labelClassName: string
 }
 
 function SegmentGroup({
@@ -93,6 +105,9 @@ function SegmentGroup({
   isSeconds,
   isMobile,
   animateSizeOnMobile,
+  segmentClassName,
+  digitClassName,
+  labelClassName,
 }: SegmentGroupProps & { isFinalCountdown?: boolean, isSeconds?: boolean }) {
   const [tens, ones] = String(value).padStart(2, "0").split("")
   const labelWrapperRef = useRef<HTMLDivElement>(null)
@@ -144,17 +159,21 @@ function SegmentGroup({
           slideIntensity={slideIntensity}
           flashIntensity={flashIntensity}
           slideDuration={slideDuration}
+          segmentClassName={segmentClassName}
+          digitClassName={digitClassName}
         />
         <Segment
           digit={ones}
           slideIntensity={slideIntensity}
           flashIntensity={flashIntensity}
           slideDuration={slideDuration}
+          segmentClassName={segmentClassName}
+          digitClassName={digitClassName}
         />
       </div>
       {showLabels && (
         <div ref={labelWrapperRef} className="overflow-hidden">
-          <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          <span className={`font-semibold uppercase tracking-widest text-background/70 ${labelClassName}`}>
             {unit}
           </span>
         </div>
@@ -167,9 +186,17 @@ interface SeparatorProps {
   isFinalCountdown: boolean
   showBelowSm?: boolean
   isMobile?: boolean
+  separatorWrapperClassName: string
+  separatorIconClassName: string
 }
 
-function Separator({ isFinalCountdown, showBelowSm = false, isMobile }: SeparatorProps) {
+function Separator({
+  isFinalCountdown,
+  showBelowSm = false,
+  isMobile,
+  separatorWrapperClassName,
+  separatorIconClassName,
+}: SeparatorProps) {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -194,11 +221,14 @@ function Separator({ isFinalCountdown, showBelowSm = false, isMobile }: Separato
   }, [isFinalCountdown, isMobile])
 
   return (
-    <div ref={ref} className={`h-16 items-center justify-center overflow-hidden ${showBelowSm ? "flex" : "hidden sm:flex"}`}>
+    <div
+      ref={ref}
+      className={`items-center justify-center overflow-hidden ${separatorWrapperClassName} ${showBelowSm ? "flex" : "hidden sm:flex"}`}
+    >
       <svg
         aria-hidden="true"
         viewBox="0 0 12 32"
-        className="h-10 w-4 fill-muted-foreground"
+        className={`fill-background/70 ${separatorIconClassName}`}
       >
         <circle cx="6" cy="11" r="2.2" />
         <circle cx="6" cy="21" r="2.2" />
@@ -216,7 +246,38 @@ interface CountdownProps {
   showLabels?: boolean
   endText?: string
   unitLabels?: Partial<Record<"days" | "hours" | "minutes" | "seconds", string>>
+  size?: "sm" | "md" | "lg"
 }
+
+const sizeClasses = {
+  sm: {
+    segment: "w-10 h-12",
+    digit: "text-2xl",
+    label: "text-[10px]",
+    separatorWrapper: "h-12",
+    separatorIcon: "h-7 w-3",
+    endTextBox: "h-12 px-3",
+    containerPadding: "p-3",
+  },
+  md: {
+    segment: "w-14 h-16",
+    digit: "text-4xl",
+    label: "text-xs",
+    separatorWrapper: "h-16",
+    separatorIcon: "h-10 w-4",
+    endTextBox: "h-16 px-4",
+    containerPadding: "p-4",
+  },
+  lg: {
+    segment: "w-18 h-20",
+    digit: "text-5xl",
+    label: "text-sm",
+    separatorWrapper: "h-20",
+    separatorIcon: "h-12 w-5",
+    endTextBox: "h-20 px-5",
+    containerPadding: "p-5",
+  },
+} as const
 
 function useCountdown(targetDate: Date | string): TimeLeft {
   const target = new Date(targetDate).getTime()
@@ -256,6 +317,7 @@ export default function Countdown({
   showLabels = true,
   endText = "KONIEC CZASU",
   unitLabels,
+  size = "md",
 }: CountdownProps) {
   const labels = {
     days: "dni",
@@ -276,6 +338,8 @@ export default function Countdown({
 
   const containerRef = useRef<HTMLDivElement>(null)
   const [isMobile, setIsMobile] = useState(false)
+  const effectiveSize = isMobile && size === "lg" ? "md" : size
+  const sizing = sizeClasses[effectiveSize]
 
   useEffect(() => {
     if (typeof window === "undefined") return
@@ -316,28 +380,30 @@ export default function Countdown({
 
   if (expiredAtMount.current) {
     return (
-      <div className="relative flex flex-wrap sm:flex-nowrap items-start rounded-2xl bg-accent p-4 gap-2">
-      <div className="relative flex items-center justify-center rounded-lg px-4 h-16 bg-muted shadow-[inset_0_0_16px_color-mix(in_oklab,var(--foreground)_22%,transparent)]">
-        <span className="text-4xl font-bold text-foreground whitespace-nowrap">
-          {endText}
-        </span>
+      <div className={`relative flex flex-wrap sm:flex-nowrap items-start rounded-2xl bg-primary gap-2 ${sizing.containerPadding}`}>
+        <div
+          className={`relative flex items-center justify-center rounded-lg bg-muted shadow-[inset_0_0_16px_color-mix(in_oklab,var(--background)_100%,transparent)] ${sizing.endTextBox}`}
+        >
+          <span className={`font-bold text-foreground whitespace-nowrap ${sizing.digit}`}>
+            {endText}
+          </span>
+        </div>
       </div>
-    </div>
     )
   }
 
   return (
     <div
       ref={containerRef}
-      className={`w-fit grid grid-cols-[auto_auto_auto] sm:flex sm:flex-nowrap items-start rounded-2xl bg-accent p-4 transition-all duration-500 ${isFinalCountdown ? "gap-0" : "gap-2"}`}
+      className={`w-fit grid grid-cols-[auto_auto_auto] sm:flex sm:flex-nowrap items-start rounded-2xl bg-primary transition-all duration-500 ${sizing.containerPadding} ${isFinalCountdown ? "gap-0" : "gap-2"}`}
     >
-      <SegmentGroup value={days} unit={labels.days} slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showLabels={showLabels} slideDuration={denormalizedSlideDuration} isFinalCountdown={isFinalCountdown} isMobile={isMobile} animateSizeOnMobile />
-      <Separator isFinalCountdown={isFinalCountdown} showBelowSm isMobile={isMobile} />
-      <SegmentGroup value={hours} unit={labels.hours} slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showLabels={showLabels} slideDuration={denormalizedSlideDuration} isFinalCountdown={isFinalCountdown} isMobile={isMobile} animateSizeOnMobile />
-      <Separator isFinalCountdown={isFinalCountdown} isMobile={isMobile} />
-      <SegmentGroup value={minutes} unit={labels.minutes} slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showLabels={showLabels} slideDuration={denormalizedSlideDuration} isFinalCountdown={isFinalCountdown} isMobile={isMobile} />
-      <Separator isFinalCountdown={isFinalCountdown} showBelowSm isMobile={isMobile} />
-      <SegmentGroup value={seconds} unit={labels.seconds} slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showLabels={showLabels} slideDuration={denormalizedSlideDuration} isFinalCountdown={isFinalCountdown} isSeconds isMobile={isMobile} />
+      <SegmentGroup value={days} unit={labels.days} slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showLabels={showLabels} slideDuration={denormalizedSlideDuration} isFinalCountdown={isFinalCountdown} isMobile={isMobile} animateSizeOnMobile segmentClassName={sizing.segment} digitClassName={sizing.digit} labelClassName={sizing.label} />
+      <Separator isFinalCountdown={isFinalCountdown} showBelowSm isMobile={isMobile} separatorWrapperClassName={sizing.separatorWrapper} separatorIconClassName={sizing.separatorIcon} />
+      <SegmentGroup value={hours} unit={labels.hours} slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showLabels={showLabels} slideDuration={denormalizedSlideDuration} isFinalCountdown={isFinalCountdown} isMobile={isMobile} animateSizeOnMobile segmentClassName={sizing.segment} digitClassName={sizing.digit} labelClassName={sizing.label} />
+      <Separator isFinalCountdown={isFinalCountdown} isMobile={isMobile} separatorWrapperClassName={sizing.separatorWrapper} separatorIconClassName={sizing.separatorIcon} />
+      <SegmentGroup value={minutes} unit={labels.minutes} slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showLabels={showLabels} slideDuration={denormalizedSlideDuration} isFinalCountdown={isFinalCountdown} isMobile={isMobile} segmentClassName={sizing.segment} digitClassName={sizing.digit} labelClassName={sizing.label} />
+      <Separator isFinalCountdown={isFinalCountdown} showBelowSm isMobile={isMobile} separatorWrapperClassName={sizing.separatorWrapper} separatorIconClassName={sizing.separatorIcon} />
+      <SegmentGroup value={seconds} unit={labels.seconds} slideIntensity={denormalizedSlideIntensity} flashIntensity={denormalizedFlashIntensity} showLabels={showLabels} slideDuration={denormalizedSlideDuration} isFinalCountdown={isFinalCountdown} isSeconds isMobile={isMobile} segmentClassName={sizing.segment} digitClassName={sizing.digit} labelClassName={sizing.label} />
     </div>
   )
 }
